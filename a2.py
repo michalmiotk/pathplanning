@@ -40,15 +40,22 @@ class AStarSearch:
             # Check if potential move is valid.
             if not self.valid_move(move):
                 continue
+            
             # Check if move has already been explored.
+            if str(move) not in self.not_explored and str(move) not in self.explored:
+                self.not_explored[str(move)] = self.pos_depth + 1 + self.heuristic(move)
                 # Visualize the Heuristic Grid
-
+                self.h_grid[move[0], move[1]] = self.pos_depth + 1 + self.heuristic(move)
         # Since all next possible moves have been determined,
         # consider current location explored.
+        self.explored[str(self.pos)] = 0
         return True
 
     def goal_found(self):
-        if True:
+        if self.goal_str in self.not_explored:
+            self.pos = self.string_to_array(self.goal_str)
+            self.pos_depth = self.not_explored.pop(self.goal_str)
+            self.path[self.pos[0], self.pos[1]] = self.pos_depth
             # Add goal to path.
             return True
         return False
@@ -61,14 +68,20 @@ class AStarSearch:
             reverse=False)
 
         # Determine the pos and depth of next move.
-        
+        self.pos_str = sorted_not_explored[0]
+        self.pos = self.string_to_array(self.pos_str)
+        self.pos_depth = self.not_explored.pop(self.pos_str) - self.heuristic(self.pos)
         # Write depth of next move onto path.
-
+        self.path[self.pos[0], self.pos[1]] = round(self.pos_depth, 1)
+     
+        
         return True
 
     def heuristic(self, move):
-        answer = 0.0
-        return round(answer, 1)
+
+        dis = move-goal
+        answer = dis*dis
+        return round(np.sqrt(np.sum(answer)), 1)
 
     # END - Student Section
 
@@ -82,7 +95,7 @@ class AStarSearch:
 
         potential_moves = [pos + u, pos + d, pos + l, pos + r]
         # Students, uncomment the line below,  what happens?
-        #potential_moves += [pos + u+r, pos + u+l, pos + d+r, pos + d+l]
+        potential_moves += [pos + u+r, pos + u+l, pos + d+r, pos + d+l]
         return potential_moves
 
     def valid_move(self, move):

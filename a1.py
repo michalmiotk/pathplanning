@@ -1,6 +1,6 @@
 import numpy as np
 start = np.array([0, 0])
-goal = np.array([5, 9])
+goal = np.array([9, 9])
 grid = np.array([[0, 0, 0, 0, 0, 0, 0, 1, 0, 0],  # Row 0
                  [0, 1, 1, 0, 0, 0, 0, 1, 0, 0],  # Row 1
                  [0, 1, 1, 0, 0, 0, 0, 0, 0, 0],  # Row 2
@@ -17,6 +17,20 @@ grid = np.array([[0, 0, 0, 0, 0, 0, 0, 1, 0, 0],  # Row 0
 path = np.zeros([len(grid), len(grid)], dtype=int)
 best_path = np.zeros([len(grid), len(grid)], dtype=int)
 
+def find_best_path(pos):
+    best_path[pos[0], pos[1]] = 1
+    h_pos = path[pos[0], pos[1]]
+    if h_pos == 1:
+        return 1
+
+    potential_moves = bfs.generate_potential_moves(pos)
+    for move in potential_moves:
+        if not bfs.valid_move(move):
+            continue
+        h_move = path[move[0], move[1]]
+        if h_move == (h_pos - 1):
+            return find_best_path(move) + 1
+            
 
 class BreadthFirstSearch:
     def __init__(self, start, goal, grid, path):
@@ -34,20 +48,28 @@ class BreadthFirstSearch:
 
     def get_possible_moves(self):
         potential_moves = self.generate_potential_moves(self.pos)
+        possible_moves = []
         for move in potential_moves:
             # Check if potential move is valid.
             if not self.valid_move(move):
                 continue
+            
             # Check if move has already been explored.
-
+            if str(move) not in self.explored and str(move) not in self.not_explored:
+                self.not_explored[str(move)] = self.pos_depth+1
+                #self.path[move[0], move[1]] = self.pos_depth + 1
         # Since all next possible moves have been determined,
         # consider current location explored.
+        self.explored[self.pos_str] = 0
 
         return True
-
     def goal_found(self):
-        if True:
+        if self.goal_str in self.not_explored:
             # Add goal to path.
+            self.pos = self.string_to_array(self.goal_str)
+            self.pos_depth = self.not_explored.pop(self.goal_str)
+            self.path[self.pos[0], self.pos[1]] = self.pos_depth
+
             return True
         return False
 
@@ -55,13 +77,18 @@ class BreadthFirstSearch:
         # Determine next move to explore.
         sorted_not_explored = sorted(
             self.not_explored,
-            key=self.not_explored.get,
+            key=,
             reverse=False)
 
         # Determine the pos and depth of next move.
-
+        self.pos_str = sorted_not_explored[-1]
+        self.pos = self.string_to_array(self.pos_str)
+        self.pos_depth = self.not_explored.pop(self.pos_str)
         # Write depth of next move onto path.
-
+        self.path[self.pos[0], self.pos[1]] = self.pos_depth
+          
+        
+        
         return True
 
     # END - Student Section
@@ -76,7 +103,7 @@ class BreadthFirstSearch:
 
         potential_moves = [pos + u, pos + d, pos + l, pos + r]
         # Students, uncomment the line below,  what happens?
-        #potential_moves += [pos + u+r, pos + u+l, pos + d+r, pos + d+l]
+        potential_moves += [pos + u+r, pos + u+l, pos + d+r, pos + d+l]
         return potential_moves
 
     def valid_move(self, move):
@@ -113,20 +140,6 @@ print(path)
 print('')
 print('Fully explored count ' + str(np.count_nonzero(path)))
 
-
-def find_best_path(pos):
-    best_path[pos[0], pos[1]] = 1
-    h_pos = path[pos[0], pos[1]]
-    if h_pos == 1:
-        return 1
-
-    potential_moves = bfs.generate_potential_moves(pos)
-    for move in potential_moves:
-        if not bfs.valid_move(move):
-            continue
-        h_move = path[move[0], move[1]]
-        if h_move == (h_pos - 1):
-            return find_best_path(move) + 1
 
 
 goal_count = find_best_path(goal)

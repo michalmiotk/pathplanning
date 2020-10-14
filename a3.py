@@ -1,9 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
-start = np.array([842, 160])
-goal = np.array([95, 518])
-#start = np.array([1054, 721])
-#goal = np.array([21, 453])
+#start = np.array([842, 160])
+#goal = np.array([95, 518])
+start = np.array([1054, 721])
+goal = np.array([21, 453])
 grid = np.load('new_york.npy')
 
 # Copies of grid to be used for visualizing results.
@@ -24,12 +24,19 @@ class AStarSearch:
         self.not_explored[str(start)] = 0
         self.grid = grid
         self.path = path
-
+        
     # START - Student Section
 
     def get_possible_moves(self):
         # Get Potential Moves
-        
+        potential_moves = self.generate_potential_moves(self.pos)
+        for move in potential_moves:
+            if not self.valid_move(move):
+                continue
+            
+            if str(move) not in self.not_explored and str(move) not in self.explored:
+                self.not_explored[str(move)] = self.pos_depth + 1 + self.heuristic(move)
+               
         # For each potential move:
         #   -Check if each potential move is valid.
         #   -Check if move has already been explored.
@@ -37,26 +44,36 @@ class AStarSearch:
 
         # Since all next possible moves have been determined,
         # consider current location explored.
-
+        self.explored[self.pos_str] = 0
         return True
 
     def goal_found(self):
-        if True:
+        if str(goal) in self.not_explored:
             # Add goal to path.
+            self.pos = self.string_to_array(self.goal_str)
+            self.pos_depth = self.not_explored.pop(self.goal_str)
+            
+            self.path[self.pos[0], self.pos[1]] = self.pos_depth
+            
             return True
         return False
 
     def explore_next_move(self):
         # Determine next move to explore.
-
+        sorted_moves = sorted(self.not_explored, key=self.not_explored.get, reverse=False)
         # Determine the pos and depth of next move.
- 
+        
+        self.pos_str = sorted_moves[0] 
+        self.pos = self.string_to_array(self.pos_str)
+        self.pos_depth = self.not_explored.pop(self.pos_str) - self.heuristic(self.pos)
         # Write depth of next move onto path.
-        self.path[self.pos[0], self.pos[1]] = round(0.0, 1)
+        self.path[self.pos[0], self.pos[1]] = round(self.pos_depth, 1)
         return True
 
     def heuristic(self, move):
-        answer = 0.0
+        dis = goal - move
+        dis = dis*dis
+        answer = np.sqrt(sum(dis))
         return round(answer, 1)
 
     # END - Student Section
